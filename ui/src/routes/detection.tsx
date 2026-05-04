@@ -175,6 +175,23 @@ function DetectionPage() {
     void startDetection(file);
   };
 
+  const liveResults = data.detections.map((d, index) => ({
+    x: 0,
+    y: 0,
+    width: 1,
+    height: 1,
+    label: `Detection ${index + 1}`,
+    confidence: d.confidence,
+    status: d.confidence >= 0.7 ? ("infected" as const) : ("healthy" as const),
+  }));
+
+  const liveResultsState: "empty" | "loading" | "error" | "ready" =
+    liveResults.length > 0
+      ? "ready"
+      : streamOnline === false
+        ? "empty"
+        : "loading";
+
   return (
     <DashboardLayout
       title="Detection"
@@ -218,23 +235,6 @@ function DetectionPage() {
                   <span className="font-medium text-foreground">42 m</span>
                 </div>
               </div>
-
-              <div className="mt-3 rounded-md border border-border/70 bg-muted/20 px-3 py-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Trees detected: {data.tree_count}
-                </h4>
-                <div className="mt-2 space-y-1 text-xs text-foreground">
-                  {data.detections.length > 0 ? (
-                    data.detections.map((d, i) => (
-                      <p key={i}>
-                        Tree {i + 1} - confidence: {(d.confidence * 100).toFixed(1)}%
-                      </p>
-                    ))
-                  ) : (
-                    <p className="text-muted-foreground">No trees detected yet.</p>
-                  )}
-                </div>
-              </div>
             </div>
           )}
         </div>
@@ -245,6 +245,8 @@ function DetectionPage() {
             <LiveStreamViewer
               streamUrl={getStreamUrl()}
               online={streamOnline}
+              results={liveResults}
+              resultsState={liveResultsState}
             />
           ) : (
             <>

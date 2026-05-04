@@ -1,12 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { Radio, WifiOff, RefreshCw } from "lucide-react";
+import { ResultList } from "./ResultList";
+import type { BoundingBox } from "./DetectionViewer";
+import droneImage from "@/assets/drone_image.jpg";
 
 interface LiveStreamViewerProps {
   streamUrl: string;
   online: boolean | null;
+  results: BoundingBox[];
+  resultsState: "empty" | "loading" | "error" | "ready";
 }
 
-export function LiveStreamViewer({ streamUrl, online }: LiveStreamViewerProps) {
+export function LiveStreamViewer({
+  streamUrl,
+  online,
+  results,
+  resultsState,
+}: LiveStreamViewerProps) {
   const [cacheBust, setCacheBust] = useState(() => Date.now());
   const [errored, setErrored] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -55,42 +65,49 @@ export function LiveStreamViewer({ streamUrl, online }: LiveStreamViewerProps) {
         </button>
       </div>
 
-      <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-black">
-        {online && !errored ? (
-          <img
-            ref={imgRef}
-            src={src}
-            alt="Live drone feed"
-            className="h-full w-full object-contain"
-            onError={() => setErrored(true)}
-          />
-        ) : (
-          <div className="flex flex-col items-center gap-3 text-center text-muted-foreground">
-            {online === false || errored ? (
-              <>
-                <WifiOff className="h-10 w-10 opacity-60" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    Stream unavailable
-                  </p>
-                  <p className="mt-1 text-xs">
-                    Make sure the Raspberry Pi feed is running.
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <Radio className="h-10 w-10 animate-pulse opacity-60" />
-                <p className="text-sm">Connecting to stream…</p>
-              </>
-            )}
-          </div>
-        )}
+        <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-black">
+        <div
+            className="absolute inset-0 bg-cover bg-center backdrop-blur-lg"
+          style={{ backgroundImage: `url(${droneImage})` }}
+        />
+          <div className="absolute inset-0 bg-black/50" />
+        <div className="relative z-10 flex aspect-video w-full items-center justify-center">
+          {online && !errored ? (
+            <img
+              ref={imgRef}
+              src={src}
+              alt="Live drone feed"
+              className="relative z-20 h-full w-full object-contain"
+              onError={() => setErrored(true)}
+            />
+          ) : (
+            <div className="relative z-20 flex flex-col items-center gap-3 text-center text-white/90">
+              {online === false || errored ? (
+                <>
+                  <WifiOff className="h-10 w-10 text-rose-300" />
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      Stream unavailable
+                    </p>
+                    <p className="mt-1 text-xs text-white/80">
+                      Make sure the Raspberry Pi feed is running.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Radio className="h-10 w-10 animate-pulse text-emerald-300" />
+                  <p className="text-sm font-medium text-white">Connecting to stream…</p>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      <p className="mt-2 text-center text-[11px] text-muted-foreground">
-        Source: <code>{streamUrl}</code>
-      </p>
+      <div className="mt-4">
+        <ResultList results={results} state={resultsState} />
+      </div>
     </div>
   );
 }

@@ -49,12 +49,13 @@ export function DroneMap({
       attributionControl: false,
     });
 
-    // Subtle Carto Voyager tiles (clean, modern look)
+    // Use Esri World Imagery for real satellite tiles
     L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       {
-        subdomains: "abcd",
-        maxZoom: 20,
+        maxZoom: 19,
+        attribution:
+          "Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
       },
     ).addTo(map);
 
