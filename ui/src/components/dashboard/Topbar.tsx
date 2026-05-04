@@ -30,25 +30,6 @@ export function Topbar({ title, subtitle, onMenuClick, actionLabel }: TopbarProp
           )}
         </div>
 
-        <div className="hidden items-center md:flex">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="search"
-              placeholder="Search detections..."
-              className="h-9 w-72 rounded-lg border border-border bg-card pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
-            />
-          </div>
-        </div>
-
-        <button
-          className="relative rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-          aria-label="Notifications"
-        >
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-danger" />
-        </button>
-
         {actionLabel && (
           <button
             type="button"
