@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   ArrowUp,
   Gauge,
+  Zap,
   BatteryMedium,
   MapPin,
   SignalHigh,
@@ -29,6 +30,7 @@ interface DroneData {
   altitude: number;
   speed: number;
   battery: number;
+  voltage: number;
   latitude: number;
   longitude: number;
   signal: number;
@@ -38,23 +40,11 @@ const INITIAL: DroneData = {
   altitude: 82,
   speed: 14.2,
   battery: 78,
-  latitude: 36.7538,
-  longitude: 3.0588,
+  voltage: 11.1,
+  latitude: 36.8137496,
+  longitude:10.0637659,
   signal: 92,
 };
-
-// Mock telemetry generator — simulates GET /drone/data
-async function fetchDroneData(prev: DroneData): Promise<DroneData> {
-  const jitter = (n: number, amt: number) => n + (Math.random() - 0.5) * amt;
-  return {
-    altitude: Math.max(0, +jitter(prev.altitude, 2).toFixed(1)),
-    speed: Math.max(0, +jitter(prev.speed, 0.6).toFixed(1)),
-    battery: Math.max(0, +(prev.battery - Math.random() * 0.3).toFixed(1)),
-    latitude: +jitter(prev.latitude, 0.0004).toFixed(6),
-    longitude: +jitter(prev.longitude, 0.0004).toFixed(6),
-    signal: Math.min(100, Math.max(40, +jitter(prev.signal, 3).toFixed(0))),
-  };
-}
 
 function batteryStatus(b: number): DroneCardStatus {
   if (b < 15) return "critical";
@@ -73,27 +63,75 @@ function DroneMonitoringPage() {
   const [path, setPath] = useState<Array<[number, number]>>([
     [INITIAL.latitude, INITIAL.longitude],
   ]);
+  const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
-    let alive = true;
-    const tick = async () => {
-      const next = await fetchDroneData(data);
-      if (!alive) return;
-      setData(next);
-      setPath((p) => {
-        const updated: Array<[number, number]> = [
-          ...p,
-          [next.latitude, next.longitude],
-        ];
-        return updated.slice(-30);
-      });
+    const wsUrl =
+      import.meta.env.VITE_DRONE_WS_URL ?? "ws://192.168.0.179:8765";
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      setIsLive(true);
     };
-    const id = setInterval(tick, 1500);
+
+    ws.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data) as Partial<DroneData> & {
+          path?: Array<[number, number]>;
+          battery_voltage?: number;
+          batteryVoltage?: number;
+        };
+
+        setData((prev) => {
+          const parsedVoltage =
+            typeof payload.voltage === "number"
+              ? payload.voltage
+              : typeof payload.battery_voltage === "number"
+                ? payload.battery_voltage
+                : typeof payload.batteryVoltage === "number"
+                  ? payload.batteryVoltage
+                  : prev.voltage;
+
+          const next: DroneData = {
+            altitude: typeof payload.altitude === "number" ? payload.altitude : prev.altitude,
+            speed: typeof payload.speed === "number" ? payload.speed : prev.speed,
+            battery: typeof payload.battery === "number" ? payload.battery : prev.battery,
+            voltage: parsedVoltage,
+            latitude: typeof payload.latitude === "number" ? payload.latitude : prev.latitude,
+            longitude: typeof payload.longitude === "number" ? payload.longitude : prev.longitude,
+            signal: typeof payload.signal === "number" ? payload.signal : prev.signal,
+          };
+
+          setPath((prevPath) => {
+            if (Array.isArray(payload.path) && payload.path.length > 0) {
+              return payload.path.slice(-30);
+            }
+            const updated: Array<[number, number]> = [
+              ...prevPath,
+              [next.latitude, next.longitude],
+            ];
+            return updated.slice(-30);
+          });
+
+          return next;
+        });
+      } catch (error) {
+        console.error("Failed to parse telemetry payload", error);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    ws.onclose = () => {
+      setIsLive(false);
+    };
+
     return () => {
-      alive = false;
-      clearInterval(id);
+      ws.close();
     };
-  }, [data]);
+  }, []);
 
   return (
     <DashboardLayout
@@ -106,10 +144,10 @@ function DroneMonitoringPage() {
           <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-success" />
         </span>
         <span className="text-xs font-semibold uppercase tracking-wider text-success">
-          Live
+          {isLive ? "Live" : "Offline"}
         </span>
         <span className="text-xs text-muted-foreground">
-          · Updating every 1.5s
+          {isLive ? "· Receiving telemetry stream" : "· Waiting for telemetry stream"}
         </span>
       </div>
 
@@ -153,6 +191,12 @@ function DroneMonitoringPage() {
               unit="%"
               icon={SignalHigh}
               status={signalStatus(data.signal)}
+            />
+            <DroneCard
+              label="Voltage"
+              value={data.voltage.toFixed(2)}
+              unit="V"
+              icon={Zap}
             />
             <div className="col-span-2 rounded-xl border border-border bg-card p-4 shadow-card">
               <div className="flex items-center justify-between">

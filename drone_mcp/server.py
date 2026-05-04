@@ -7,15 +7,23 @@ from config import SCRIPTS
 # Create MCP server
 mcp = FastMCP("drone")
 
-@mcp.tool()
+'''@mcp.tool()
 def get_status() -> str:
     """Get current drone telemetry - altitude, speed, attitude, GPS, battery"""
     return run_script(SCRIPTS["status"])
-
+'''
 @mcp.tool()
 def motor_test() -> str:
-    """Run a motor test on all motors"""
+    """Run a motor test on all motors , one by one, to confirm they are working and wired correctly - always confirm with user before running"""
     return run_script(SCRIPTS["motor_test"])
+@mcp.tool()
+def test_connection() -> str:
+    """Test SSH connection to drone - returns success or error message"""
+    return run_script(SCRIPTS["test_connection"])
+@mcp.tool()
+def start_telemetry_server() -> str:
+    """Start the telemetry server on the drone to stream data back to the ui - run this before connecting the ui telemetry client"""
+    return run_script(SCRIPTS["telemetry_server"])
 
 '''@mcp.tool()
 def arm() -> str:
