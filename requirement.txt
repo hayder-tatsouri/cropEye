@@ -1,0 +1,29 @@
+# CropEye Requirements
+# Python dependencies for Drone MCP Server and YOLO Model Server
+
+# Core Framework & Server
+fastmcp
+mcp
+flask
+flask-cors
+fastapi 
+uvicorn
+anthropic
+
+
+# Computer Vision & AI
+opencv-python
+opencv-contrib-python
+numpy
+onnxruntime
+
+# SSH & Network Communication
+paramiko
+pycryptodome
+
+# Utilities & Helpers
+python-dotenv
+requests
+
+# Development & Testing
+pytest
