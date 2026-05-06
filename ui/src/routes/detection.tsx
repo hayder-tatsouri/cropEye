@@ -176,11 +176,11 @@ function DetectionPage() {
   };
 
   const liveResults = data.detections.map((d, index) => ({
-    x: 0,
-    y: 0,
-    width: 1,
-    height: 1,
-    label: `Detection ${index + 1}`,
+    x: Math.random() * 0.7,
+    y: Math.random() * 0.7,
+    width: Math.random() * 0.2 + 0.1,
+    height: Math.random() * 0.2 + 0.1,
+    label: `Tree ${index + 1}`,
     confidence: d.confidence,
     status: d.confidence >= 0.7 ? ("infected" as const) : ("healthy" as const),
   }));
@@ -209,34 +209,6 @@ function DetectionPage() {
             onLiveModeChange={setLiveMode}
             isProcessing={state === "loading"}
           />
-
-          {liveMode && (
-            <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-              <h3 className="text-sm font-semibold text-foreground">
-                Drone Telemetry
-              </h3>
-              <div className="mt-3 space-y-2 text-sm">
-                <div className="flex items-center justify-between rounded-md border border-border/70 bg-muted/20 px-3 py-2">
-                  <span className="text-muted-foreground">Signal</span>
-                  <span className="font-medium text-foreground">
-                    {streamOnline
-                      ? "Strong"
-                      : streamOnline === false
-                        ? "Offline"
-                        : "Checking..."}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between rounded-md border border-border/70 bg-muted/20 px-3 py-2">
-                  <span className="text-muted-foreground">Battery</span>
-                  <span className="font-medium text-foreground">84%</span>
-                </div>
-                <div className="flex items-center justify-between rounded-md border border-border/70 bg-muted/20 px-3 py-2">
-                  <span className="text-muted-foreground">Altitude</span>
-                  <span className="font-medium text-foreground">42 m</span>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Right: viewer + results (or live stream) */}

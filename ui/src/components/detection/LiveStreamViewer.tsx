@@ -65,23 +65,23 @@ export function LiveStreamViewer({
         </button>
       </div>
 
-        <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-black">
-        <div
-            className="absolute inset-0 bg-cover bg-center backdrop-blur-lg"
-          style={{ backgroundImage: `url(${droneImage})` }}
-        />
-          <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 flex aspect-video w-full items-center justify-center">
-          {online && !errored ? (
-            <img
-              ref={imgRef}
-              src={src}
-              alt="Live drone feed"
-              className="relative z-20 h-full w-full object-contain"
-              onError={() => setErrored(true)}
+      <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-black">
+        {online && !errored ? (
+          <img
+            ref={imgRef}
+            src={src}
+            alt="Live drone feed"
+            className="h-full w-full object-contain"
+            onError={() => setErrored(true)}
+          />
+        ) : (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center backdrop-blur-lg"
+              style={{ backgroundImage: `url(${droneImage})` }}
             />
-          ) : (
-            <div className="relative z-20 flex flex-col items-center gap-3 text-center text-white/90">
+            <div className="absolute inset-0 bg-black/50" />
+            <div className="relative z-10 flex flex-col items-center gap-3 text-center text-white/90">
               {online === false || errored ? (
                 <>
                   <WifiOff className="h-10 w-10 text-rose-300" />
@@ -101,8 +101,8 @@ export function LiveStreamViewer({
                 </>
               )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       <div className="mt-4">

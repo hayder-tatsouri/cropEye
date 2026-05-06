@@ -77,6 +77,9 @@ export function ResultList({ results, state }: ResultListProps) {
                   style={{ width: `${pct}%` }}
                 />
               </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                <div>Position: ({Math.round(r.x * 100)}, {Math.round(r.y * 100)})</div>
+              </div>
             </li>
           );
         })}
